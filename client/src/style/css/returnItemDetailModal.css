@@ -1,0 +1,12 @@
+
+
+.container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Adjust height as needed */
+    padding: 2rem; /* Add padding to the container */
+}
+
+
+

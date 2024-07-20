@@ -1,0 +1,117 @@
+import './main.scss';
+import React from 'react';
+
+function Form() {
+
+  const handleSubmit = (e)=>{
+    e.preventDefault();
+  }
+
+
+  return (
+  <div className="container">
+   <form className="top-container" onSubmit={handleSubmit}>
+    <label className='label-container'>User ID</label>
+                  <input className="input-container"></input>
+    <label  className='label-container'>Password</label>
+                  <input className="input-container"></input>
+
+      <select id="division">
+        <option value="Bintulu">Bintulu</option>
+        <option value="Johor">Johor</option>
+        <option value="Kota-Kinabalu">Kota Kinabalu</option>
+        <option value="Selangor">Selangor</option>
+
+
+
+      </select>
+
+
+    <button className='button-submit' type="submit"> Submit</button>
+    <div className='link-container'>
+        <a href='/' className="link">Forgot your password?</a>
+        <a  href='/' className="link">Sign up?</a>
+    </div>
+    
+   </form>
+   </div>
+   
+  );
+}
+
+export default Form;
+
+
+
+.container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  
+ 
+}
+
+.input-container{
+   width:20rem;
+   text-decoration: none;
+   border:none;
+   border:1px solid grey;
+   padding:.5rem 1rem;
+   border-radius:.3rem;
+   outline: none;
+ 
+}
+
+.top-container{
+    color:black;
+    display:flex;
+    flex-direction:column;
+    padding:2rem 2rem;
+    gap:2rem;
+    justify-content: center;
+    align-self: center;
+    border-radius: .5rem;
+    box-shadow:0px 0px 1px black;
+    
+}
+
+.button-submit{
+    text-decoration: none;
+    border:none;
+    padding:1rem 2rem;
+    border-radius:.5rem;
+    font-family: monospace;
+
+   &:hover{
+        cursor: pointer;
+        background-color: beige;
+   }
+}
+
+
+.label-container{
+    font-family: monospace;
+    font-size:16px;
+}
+
+
+.link-container{
+    display:flex;
+    flex-direction:column;
+    padding:0.5rem;
+    gap:1rem;
+    justify-content: left;
+    align-items: center;
+}
+
+
+.link{
+    text-decoration: none;
+    color:lightblue;
+    font-family: monospace;
+}
+
+#division{
+padding:.3rem 1rem;
+border-radius:.4rem;
+}

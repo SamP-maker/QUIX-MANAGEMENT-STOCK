@@ -1,0 +1,62 @@
+
+
+
+.Side-panel-container{
+    width: 30vw; /* 25% of the viewport width */
+    height: 100vh;
+    background-color: var(--Grey);
+    font-family: "Worksans", sans-serif;
+    color: var(--White);
+    display:flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+
+&>div:hover{
+    cursor: pointer;
+    color: LightBlue;
+}
+ 
+
+}
+
+
+.Sub-container-inventory{
+  padding:10px 40px;
+  text-decoration: none;
+  color:var(--White);
+
+
+}
+
+
+
+
+.Sub-container-account{
+    padding:10px 40px;
+    text-decoration: none;
+    color:var(--White);
+
+}
+
+.Sub-container-logout{
+    padding:10px 40px;
+    text-decoration: none;
+    color:var(--White);
+
+}
+
+.Sub-container-request{
+    padding:10px 40px;
+    text-decoration: none;
+    color:var(--White);
+  
+}
+
+.Sub-container-return{
+    padding:10px 40px;
+    text-decoration: none;
+    color:var(--White);
+  
+}
+

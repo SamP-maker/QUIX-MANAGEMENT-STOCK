@@ -1,0 +1,81 @@
+
+.page-container{
+    display:flex;
+    gap:1rem;
+}
+
+
+
+.account-container{
+    
+    display:flex;
+    width:100%;
+    align-items: center;
+    margin-left:10%;
+    margin-right:10%;
+
+}
+
+
+.personal-form-container{
+    width:100%;
+    display:grid;
+    padding:3rem 3rem;
+    border-radius:.5em;
+    height:800px;
+    grid-template-columns: repeat(2,1fr);
+    grid-template-rows: repeat(auto,250px);
+    font-family: "Work Sans", sans-serif;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+
+    
+
+
+    .label-input-container{
+        display:flex;
+        flex-direction: column;
+        margin-bottom: 1rem;
+        border-radius: 0.25em;
+
+        &:nth-child(2){
+            grid-row-start:2;
+            grid-row-end:3;
+            grid-column-start:1;
+            grid-column-end:1;
+        }
+
+
+        &:nth-child(3){
+            grid-row-start:2;
+            grid-row-end:3;
+            grid-column-start:2;
+            grid-column-end:2;
+        }
+
+        &:nth-child(4){
+            grid-row-start:3;
+            grid-row-end:4;
+            grid-column-start:1;
+            grid-column-end:1;
+        }
+
+
+        &:nth-child(5){
+            grid-row-start:3;
+            grid-row-end:4;
+            grid-column-start:2;
+            grid-column-end:2;
+        }
+    }
+
+
+
+    }
+   
+   
+
+
+.personal-info{
+    font-size:36px;
+}
+
