@@ -17,7 +17,8 @@ export const Theme={
        Yellow: "rgba(244, 216, 35, 0.8)",
        DarkYellow: "rgba(254, 199, 26, 0.8)",
        LightGreen: "rgba(110, 219, 86, 0.95)",
-       Green: "rgba(55, 160, 33, 0.95)",
+       Green: "rgba(73, 199, 85, 0.95)",
+       
     },
     font:["inter"]
 }

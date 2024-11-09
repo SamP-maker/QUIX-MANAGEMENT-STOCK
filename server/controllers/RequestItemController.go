@@ -1,90 +1,191 @@
 package controllers
 
 import (
-	"database/sql"
+	"bytes"
+	"errors"
+	"fmt"
+	"io"
+	"log"
 	"net/http"
 	db "stock-management-server/database"
 	models "stock-management-server/models"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 )
 
+func CopyRequestListtoReturns(requestID int) error {
+	var requestItem models.RequestItem
+	if err := db.DB.Preload("Items").First(&requestItem, requestID).Error; err != nil {
+		return err
+	}
+
+	returnItem := models.ReturnItem{
+		RequestID:     &requestItem.RequestID,
+		ReturnerID:    requestItem.ReturnerID,
+		CreatedAt:     &requestItem.CreatedAt,
+		UpdatedAt:     time.Now(),
+		ExpiredAt:     requestItem.ExpiredAt,
+		ReturnStatus:  requestItem.ReturnStatus,
+		RequestStatus: &requestItem.RequestStatus,
+		WorkOrder:     &requestItem.WorkOrder,
+		Team:          &requestItem.Team,
+		Department:    &requestItem.Department,
+		Items:         requestItem.Items,
+	}
+
+	tx := db.DB.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	if err := tx.Create(&returnItem).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
+}
+
 func GetRequestItemList(c *gin.Context) {
-	rows, err := db.DB.Query("SELECT item_id, request_id, returner_id, created_at, updated_at, status, Items from RequestID")
-	if err != nil {
+
+	sortOrder := c.Query("sortOrder")
+	sortBy := c.Query("sortBy")
+
+	if sortOrder == "" {
+		sortOrder = "asc"
+	}
+	if sortBy == "" {
+		sortBy = "created_At"
+	}
+
+	var sortByColumn string
+	switch sortBy {
+	case "updated_at":
+		sortByColumn = "updated_at"
+	case "created_at":
+		sortByColumn = "created_at"
+	case "request_status":
+		sortByColumn = "request_status"
+	case "request_id":
+		sortByColumn = "request_id"
+	case "returner_id":
+		sortByColumn = "returner_id"
+	case "work_order":
+		sortByColumn = "work_order"
+	case "team":
+		sortByColumn = "team"
+	case "department":
+		sortByColumn = "department"
+	case "expired_at":
+		sortByColumn = "expired_at"
+	default:
+		sortByColumn = "created_at"
+	}
+
+	var requestItems []models.RequestItem
+
+	if err := db.DB.Preload("Items").
+		Order(sortByColumn + " " + strings.ToUpper(sortOrder)).
+		Find(&requestItems).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	defer rows.Close()
-
-	var requestItems []models.RequestItem
-
-	for rows.Next() {
-		var requestItem models.RequestItem
-		if err := rows.Scan(&requestItem.ItemID, &requestItem.RequestID, &requestItem.ReturnerID, &requestItem.CreatedAt, &requestItem.UpdatedAt); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		itemDetailsRows, err := db.DB.Query("SELECT id, item_id, item_name, item_quantity, status, created_at, updated_at, request_id, return_id FROM item_details WHERE request_id = ?", requestItem.RequestID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		defer itemDetailsRows.Close()
-
-		var itemDetails []models.Item_Details
-
-		for itemDetailsRows.Next() {
-			var itemDetail models.Item_Details
-			if err := itemDetailsRows.Scan(&itemDetail.ID, &itemDetail.ItemID, &itemDetail.ItemName, &itemDetail.ItemQuantity, &itemDetail.Status, &itemDetail.CreatedAt, &itemDetail.UpdatedAt, &itemDetail.RequestID, &itemDetail.ReturnID); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
+	var transformedData []map[string]interface{}
+	for _, requestItem := range requestItems {
+		itemDetails := make([]map[string]interface{}, len(requestItem.Items))
+		for i, item := range requestItem.Items {
+			itemDetails[i] = map[string]interface{}{
+				"id":            item.ID,
+				"item_id":       item.ItemID,
+				"item_name":     item.ItemName,
+				"item_quantity": item.ItemQuantity,
+				"status":        item.Status,
+				"created_at":    item.CreatedAt,
+				"updated_at":    item.UpdatedAt,
+				"request_id":    item.RequestID,
+				"return_id":     item.ReturnID,
 			}
-			itemDetails = append(itemDetails, itemDetail)
 		}
-		requestItem.Items = itemDetails
-		requestItems = append(requestItems, requestItem)
-
+		transformedData = append(transformedData, map[string]interface{}{
+			"request_id":     requestItem.RequestID,
+			"returner_id":    requestItem.ReturnerID,
+			"created_at":     requestItem.CreatedAt,
+			"updated_at":     requestItem.UpdatedAt,
+			"return_status":  requestItem.ReturnStatus,
+			"request_status": requestItem.RequestStatus,
+			"work_order":     requestItem.WorkOrder,
+			"team":           requestItem.Team,
+			"department":     requestItem.Department,
+			"items":          itemDetails,
+		})
 	}
-	c.JSON(http.StatusOK, requestItems)
+
+	columnHeaders := []string{"request_id", "returner_id", "created_at", "updated_at", "Return_status", "Request_status", "Work_Order", "Team", "Department", "Items"}
+	c.JSON(http.StatusOK, gin.H{
+		"columns": columnHeaders,
+		"request": transformedData,
+	})
 }
 
 func PostRequestItemList(c *gin.Context) {
+	// Read and log the body
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read request body"})
+		return
+	}
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(body)) // Reset the body
+	log.Printf("Received payload: %s", body)
+
+	// Check Content-Type
+	if c.ContentType() != "application/json" {
+		c.JSON(http.StatusUnsupportedMediaType, gin.H{"error": "Content-Type must be application/json"})
+		return
+	}
+
+	// Bind JSON to struct
 	var postRequest models.RequestItem
 	if err := c.BindJSON(&postRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	tx, err := db.DB.Begin()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// Log the parsed struct
+	log.Printf("Parsed RequestItem: %+v", postRequest)
+
+	// Start transaction
+	tx := db.DB.Begin()
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
 		return
 	}
 
-	postRequestItem := "INSERT INTO request_items (ItemID,RequestID,ReturnerID,Status,Items) VALUES (?,?,?,?,?)"
-	if _, err := tx.Exec(postRequestItem, postRequest.ItemID, postRequest.RequestID, postRequest.ReturnerID, postRequest.Status, postRequest.Items); err != nil {
+	// Create request item
+	if err := tx.Create(&postRequest).Error; err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	for _, itemDetail := range postRequest.Items {
-		postItemDetailsSQL := "INSERT INTO item_details (ItemID, ItemName,ItemQuantity,Status,RequestID,ReturnID) VALUES (?,?,?,?,?,?)"
-		if _, err := tx.Exec(postItemDetailsSQL, itemDetail.ItemID, itemDetail.ItemName, itemDetail.RequestID, itemDetail.ReturnID, itemDetail.Status); err != nil {
-
+	// Copy request list to returns if status is approved
+	if strings.ToLower(postRequest.RequestStatus) == "approved" {
+		if err := CopyRequestListtoReturns(postRequest.RequestID); err != nil {
 			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
-
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 	}
 
-	if err := tx.Commit(); err != nil {
+	// Commit transaction
+	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
 		return
@@ -93,50 +194,55 @@ func PostRequestItemList(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Return item and item details status updated successfully"})
 }
 
-func UpdatePostItemList(c *gin.Context) {
+func UpdateRequestItemList(c *gin.Context) {
 
-	var updateRequest []models.Item_Details
+	var updateRequest []models.ItemDetails
 	if err := c.BindJSON(&updateRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	tx, err := db.DB.Begin()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	tx := db.DB.Begin()
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
 		return
 	}
 
 	for _, itemDetails := range updateRequest {
 
-		var existingItems models.Item_Details
-		err := tx.QueryRow("SELECT id, item_quantity FROM item_details WHERE item_id = ?", itemDetails.ItemID).Scan(&existingItems.ID, &existingItems.ItemQuantity)
+		var existingItems models.ItemDetails
+		if err := tx.Where("item_id = ?", itemDetails.ItemID).First(&existingItems).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				if err := tx.Create(&itemDetails).Error; err != nil {
+					tx.Rollback()
+					c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+					return
+				}
 
-		if err == sql.ErrNoRows {
-			addItemSQL := "INSERT INTO item_details (ItemID, ItemName, ItemQuantity, Status, CreatedAt, UpdatedAt, RequestID, ReturnID) VALUES (?,?,?,?,?,?,?,?)"
-			if _, err := tx.Exec(addItemSQL, itemDetails.ItemID, itemDetails.ItemName, itemDetails.ItemQuantity, itemDetails.Status, time.Now(), time.Now(), itemDetails.RequestID, itemDetails.ReturnID); err != nil {
+			} else {
 
 				tx.Rollback()
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
-			}
-		} else if err != nil {
-			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		} else {
 
+			}
+
+		} else {
 			if itemDetails.ItemQuantity <= 0 {
-				removeItemSQL := "DELETE FROM item_details WHERE item_id = ?"
-				if _, err := tx.Exec(removeItemSQL, itemDetails.ItemID); err != nil {
+				if err := tx.Delete(&existingItems).Error; err != nil {
 					tx.Rollback()
 					c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 					return
-
 				}
 			} else {
-				updateItemSQL := "UPDATE item_Details SET iTEMnAME = ? , ItemQuantity = ?, Status = ?, UpdatedAt, RequestID =?, ReturnID = ? WHERE item_id = ?"
-				if _, err := tx.Exec(updateItemSQL, itemDetails.ItemName, itemDetails.ItemQuantity, itemDetails.Status, time.Now(), itemDetails.RequestID, itemDetails.ReturnID, itemDetails.ItemID); err != nil {
+				existingItems.ItemName = itemDetails.ItemName
+				existingItems.ItemQuantity = itemDetails.ItemQuantity
+				existingItems.Status = itemDetails.Status
+				existingItems.UpdatedAt = time.Now()
+				existingItems.RequestID = itemDetails.RequestID
+				existingItems.ReturnID = itemDetails.ReturnID
+
+				if err := tx.Save(&existingItems).Error; err != nil {
 					tx.Rollback()
 					c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 					return
@@ -147,4 +253,39 @@ func UpdatePostItemList(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Item details updated successfully"})
+}
+
+func UpdateInventoryOnRequest(itemID int, quantity int) error {
+	var inventory models.Inventory
+	var requests models.RequestItem
+
+	tx := db.DB.Begin()
+	if err := tx.Where("item_id = ?", itemID).First(&inventory).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if inventory.Available < quantity {
+		tx.Rollback()
+		return fmt.Errorf("Items are not in stock")
+	}
+
+	if err := tx.Where("request_id = ?", itemID).First(&requests.RequestID).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	requests.RequestStatus = strings.ToLower(requests.RequestStatus)
+
+	if requests.RequestStatus == "accepted" {
+		requests.ReturnStatus = "pending"
+	}
+
+	inventory.InUse += quantity
+	inventory.Available -= quantity
+
+	if err := db.DB.Save(&inventory).Error; err != nil {
+		return err
+	}
+	return nil
 }

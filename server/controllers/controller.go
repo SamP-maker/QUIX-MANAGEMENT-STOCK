@@ -11,45 +11,42 @@ import (
 )
 
 func GetUsers(c *gin.Context) {
-	rows, err := db.DB.Query("SELECT EID, First_name, Last_name, Uid FROM users")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-
-		return
-	}
-
-	defer rows.Close()
 
 	var users []models.User
-	for rows.Next() {
-
-		var user models.User
-		if err := rows.Scan(&user.EID, &user.First_name, &user.Last_name, &user.Uid); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		users = append(users, user)
-
+	if err := db.DB.Select("EID, First_name, Last_name, Uid").Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, users)
 }
 
 func CreateUser(c *gin.Context) {
-	var user models.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var users models.User
+
+	if err := c.BindJSON(&users); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+
+	tx := db.DB.Begin()
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
 		return
 	}
 
-	_, err := db.DB.Exec("INSERT INTO users (EID, First_name, Last_name, Uid) VALUES (?, ?, ?,?)", user.EID, user.First_name, user.Last_name, user.Uid)
-	if err != nil {
+	if err := tx.Create(&users).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "User created successfully"})
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "New User Created"})
 }
 
 func Login(c *gin.Context) {

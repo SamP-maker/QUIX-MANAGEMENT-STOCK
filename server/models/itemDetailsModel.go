@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type Item_Details struct {
+type ItemDetails struct {
 	ID           int       `json:"id" gorm:"primaryKey;autoIncrement"`
 	ItemID       int       `json:"item_id" gorm:"not null"`
 	ItemName     string    `json:"item_name" gorm:"not null"`

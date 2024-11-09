@@ -1,27 +1,26 @@
-package db
+package database
 
 import (
-	"database/sql"
-	"fmt"
+	"stock-management-server/models"
 
-	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-var DB *sql.DB
+var DB *gorm.DB
 
-func Connect() {
-	dsn := "root:954632perrylarryberry1<3@tcp(127.0.0.1:3306)/quix"
+func InitDB() error {
 	var err error
-	DB, err = sql.Open("mysql", dsn)
+	dsn := "root:1234@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local"
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		fmt.Printf("Error opening database: %v\n", err)
-		panic(err)
+		return err
 	}
 
-	err = DB.Ping()
-	if err != nil {
-		fmt.Printf("Error opening database: %v\n", err)
-		panic(err)
+	// Automatically migrate your schema
+	if err := DB.AutoMigrate(&models.Inventory{}, &models.RequestItem{}, &models.ReturnItem{}, &models.ItemDetails{}); err != nil {
+		return err
 	}
-	fmt.Println("Connected to DB")
+
+	return nil
 }

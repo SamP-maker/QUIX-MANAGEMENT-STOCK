@@ -9,26 +9,37 @@ import (
 )
 
 func GetItemDetail(c *gin.Context) {
-	rows, err := db.DB.Query("SELECT Item_id, item_quanttiy, item_status, request_id, return_id")
-	if err != nil {
+	var itemDetails []models.ItemDetails
+
+	if err := db.DB.Find(&itemDetails).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	defer rows.Close()
+	c.JSON(http.StatusOK, itemDetails)
+}
 
-	var ItemDetails []models.Item_Details
+func PostItemDetails(c *gin.Context) {
+	var itemDetails models.ItemDetails
 
-	for rows.Next() {
-		var itemDetail models.Item_Details
-		if err := rows.Scan(&itemDetail.ItemID, &itemDetail.ItemQuantity, &itemDetail.Status, &itemDetail.RequestID, &itemDetail.ReturnID); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		ItemDetails = append(ItemDetails, itemDetail)
-
+	tx := db.DB.Begin()
+	if tx.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
+		return
 	}
 
-	c.JSON(http.StatusOK, ItemDetails)
+	if err := tx.Create(&itemDetails).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": tx.Error.Error()})
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Return item and item details status updated successfully"})
+	c.JSON(http.StatusOK, itemDetails)
 }

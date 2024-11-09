@@ -3,16 +3,17 @@
 
 .Side-panel-container{
     width: 30vw; /* 25% of the viewport width */
-    height: 100vh;
-    background-color: var(--Grey);
+    background-color: var(--Black);
+    position:absolute;
     font-family: "Worksans", sans-serif;
     color: var(--White);
     display:flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 20px;
+    padding-right: 30px;
+    padding-bottom: 20px;   padding-top: 10px;
 
-&>div:hover{
+&:hover{
     cursor: pointer;
     color: LightBlue;
 }
@@ -22,41 +23,69 @@
 
 
 .Sub-container-inventory{
-  padding:10px 40px;
+  padding:10px 30px;
   text-decoration: none;
   color:var(--White);
 
-
+  &:hover{
+    cursor: pointer;
+    color: LightBlue;
+}
 }
 
 
 
 
 .Sub-container-account{
-    padding:10px 40px;
+    padding:10px 30px;
     text-decoration: none;
     color:var(--White);
-
+    &:hover{
+        cursor: pointer;
+        color: LightBlue;
+    }
 }
 
 .Sub-container-logout{
-    padding:10px 40px;
+    padding:10px 30px;
     text-decoration: none;
     color:var(--White);
-
+    &:hover{
+        cursor: pointer;
+        color: LightBlue;
+    }
 }
 
 .Sub-container-request{
-    padding:10px 40px;
+    padding:10px 30px;
     text-decoration: none;
     color:var(--White);
-  
+    display:flex;
+    &:hover{
+        cursor: pointer;
+        color: LightBlue;
+    }
+   
 }
 
 .Sub-container-return{
-    padding:10px 40px;
+    padding:10px 30px;
     text-decoration: none;
     color:var(--White);
-  
+    display:flex;
+    &:hover{
+        cursor: pointer;
+        color: LightBlue;
+    }
+}
+
+
+.Button-Container{
+    display:flex;
+    padding-left:15px;
+    flex-direction:row;
+    justify-content: flex-end;
+    width:100%;
+
 }
 

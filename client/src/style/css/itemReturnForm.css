@@ -2,10 +2,12 @@
 
 .container{
     display: flex;
+    position:fixed;
     justify-content: center;
     align-items: center;
     height: 100vh; /* Adjust height as needed */
     padding: 2rem; /* Add padding to the container */
+    z-index:999;
 }
 
 
@@ -62,9 +64,81 @@
 }
 
 
-.Checkbox{
+.Header{
     display:flex;
     justify-content: space-between;
     font-family: "Worksans", sans-serif;
     align-items:center;
 }
+
+.Description{
+    display:flex;
+    justify-content: space-between;
+    font-family: "Worksans", sans-serif;
+    align-items:center;
+    padding-left:.5rem;
+}
+
+
+.Item-detail-container{
+    border:1px solid black;
+    border-radius:10px;
+        padding:1rem;
+        display:flex;
+        flex-direction:row;
+        justify-content: space-between;
+        align-items:center;
+        align-content: center;
+}
+
+
+.arrow {
+    border: solid black;
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 3px;
+  }
+
+
+  .down {
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+  }
+
+
+  .Close-Button-Container{
+width:100%;
+display:flex;
+flex-direction: row;
+justify-content: flex-end;
+  }
+
+
+
+
+  ul{
+
+    display:flex;
+    flex-direction:column;
+    gap:1em;
+    
+    align-content: center;
+
+  }
+
+  li{
+
+
+  }
+
+
+  .Item-Spread-Container{
+    display:flex;
+    flex-direction:row;
+    justify-content:space-between;
+
+
+    select{
+        width:200px;
+    }
+  }

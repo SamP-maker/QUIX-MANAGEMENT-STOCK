@@ -70,27 +70,6 @@
 
 
 
- 
-.search-container{
-    display:flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: end;
-    padding-top:1rem;padding-bottom:1rem;
-    padding:.2rem;
-    gap:10px;
-    width: 100%; /* Ensure label-input-container takes full width */
-
-
-}
-
-.fa-filter{
-    cursor: pointer;
-    position:absolute;
-    margin-right:.6rem;
-
-
-}
 
 .label-container{
     font-family: "Work Sans", sans-serif;
@@ -121,7 +100,7 @@
 .item-added-container{
     font-family: "Work Sans", sans-serif;
     color:var(--White);
-    background-color: rgba(245, 121, 16, 0.8);
+    background-color: var(--Green);
     padding:1rem 1rem;
     border-radius:.5rem;
     display:flex;

@@ -1,11 +1,17 @@
 package models
 
+import "time"
+
 type ReturnItem struct {
-	ItemID     int            `json:"item_id" gorm:"primaryKey; autoIncrement"`
-	RequestID  int            `json:"request_id" gorm:"not null"`
-	ReturnerID string         `json:"returner_id" validate:"required,min=2,max=100" gorm:"not null"`
-	CreatedAt  int            `json:"created_at gorm:"autoUpdateTime"`
-	UpdatedAt  int            `json:"updated_at" gorm:"autoUpdateTime"`
-	Status     string         `json:"status" validate:"required,min=2,max=100" gorm:"not null"`
-	Items      []Item_Details `json:"items" gorm:"foreignKey:ReturnID"`
+	RequestID     *int          `json:"request_id" gorm:"primaryKey;autoIncrement"`
+	ReturnerID    int           `json:"returner_id" gorm:"not null"`
+	CreatedAt     *time.Time    `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt     time.Time     `json:"updated_at" gorm:"autoUpdateTime"`
+	ExpiredAt     time.Time     `json:"expire_at"`
+	ReturnStatus  string        `json:"return_status" gorm:"not null"`
+	RequestStatus *string       `json:"request_status" gorm:"not null"`
+	WorkOrder     *string       `json:"work_order" gorm:"not null"`
+	Team          *string       `json:"team" gorm:"not null"`
+	Department    *string       `json:"department" gorm:"not null"`
+	Items         []ItemDetails `json:"items" gorm:"foreignKey:RequestID;references:RequestID"`
 }

@@ -1,8 +1,11 @@
-import {createAyncThunk, createSlice} from '@reduxjs/toolkit';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+
+import { json } from 'react-router-dom';
 
 
 
-export const addNewItem = createAyncThunk('', async (newItem, {dispatch})=>{
+
+export const addNewItem = createAsyncThunk('inventory/addNewItems', async (newItem, {dispatch})=>{
 
 
 
@@ -10,7 +13,7 @@ export const addNewItem = createAyncThunk('', async (newItem, {dispatch})=>{
 
 
     try{
-        const response = await fetch('http://localhost/8080/addNewItem',{
+        const response = await fetch('http://localhost:8080/addNewItem',{
             method:'POST',
             credentials:'include',
             headers:{
@@ -31,53 +34,63 @@ export const addNewItem = createAyncThunk('', async (newItem, {dispatch})=>{
 })
 
 
-export const fetchAllInventory = createAyncThunk('',async (_, {dispatch}) =>{
+export const fetchAllInventory = createAsyncThunk('Inventory/fetchAllInventory',async ({ sortBy = 'created_at', sortOrder = 'asc'}, {dispatch}) =>{
+        
 
 
 
-    try{
-        const response = await fetch('http://localhost:8080/getInventory',{
-            method:'GET',
-            credentials:'include',
-            headers:{
-                "Content-Type": "application/json"
-
-            },
-
-
-        })
+    const url = new URL('http://localhost:8080/getInventory')
+    url.searchParams.append('sortBy', sortBy);
+    url.searchParams.append('sortOrder', sortOrder)
 
 
 
-        if(response.ok){
-            const result = response.json()
-        }
-    }catch(err){
-        console.log("error", err);
+            try{
+               const response = await fetch(url.toString(),{
+                    method: 'GET',
+                    credentials:'include',
+                    headers:{
+                        "Content-Type": "application/json"
+                    },
+                });
 
-    }
+                if(response.ok){
+                
+                    return await response.json();
+                    
+                }else{
+                    throw new Error('Failed to fetch inventory');
+                }
+
+                
+            } catch(err){
+                console.log("Error fetching inventory:", err);
+            }
+
+
 })
 
 
 
 const initialState = {
-    Inventory:{
-                itemID: "",
-                itemName:"",
-                count: 0,
-                missing_Items: 0,
-                broken_Items: 0,
-                total_count: 0,
-    },
-    newItem:{
-        itemID: "",
-        itemName:"",
-        count:0,
-        missing_Items: 0,
-        broken_Items: 0,
-        total_count: 0,
-
-    },
+    columns:[],
+    inventories: [],
+    newInventories:[
+            {
+                item_id:0,
+                item_name: "",
+                available: 0,
+                in_use:0,
+                missing_item:0,
+                broken_item:0,
+                total_count:0,
+                price_per_unit_myr:0,
+                total_stock_price_myr:0,
+                created_at: Date.now(),
+                updated_at: Date.now()
+            }
+        
+    ],
     actionStatus:{
         status:'idle',
         error: null,
@@ -89,47 +102,35 @@ const initialState = {
 const InventorySlice = createSlice({
     name:"Inventory",
     initialState,
-    reducers:{
-
-
-     
-    },
+    reducers:{},
     extraReducers: (builder)=>{
         builder
-        .addCase(fetchAllInventory.pending, (state,)=>{
-            state.actionStatus = 'loading'
+        .addCase(fetchAllInventory.pending, (state)=>{
+            state.actionStatus.status = 'loading'
         })
-        .addCase(fetchAllInventory.fullfilled, (state,action) =>{
-            state.actionStatus = 'success'
-            if(action.payload){
-                const { itemID, itemName, Count, MissingItem, Broken_Item, Total_Count} = action.payload
-                state.Inventory= {
-                    itemID,
-                    itemName,
-                    Count,
-                    MissingItem,
-                    Broken_Item,
-                    Total_Count
-                }
-            }else{
-                state.Address ={
-                    ...initialState.Inventory
-                }
-            }
+        .addCase(fetchAllInventory.fulfilled, (state,action) =>{
+            (console.log(action.payload))
+            state.actionStatus.status = 'success';
+                state.columns = action.payload.columns;
+                state.inventories = action.payload.inventories;
+               
+           
         })
         .addCase(fetchAllInventory.rejected, (state,action)=>{
-            state.actionStatus = 'failed';
-            state.error = action.error.message;
+            state.actionStatus.status = 'failed';
+           
         })
         .addCase(addNewItem.pending, (state)=>{
-            state.actionStatus = 'loading';
+            state.actionStatus.status = 'loading';
         })
-        .addCase(addNewItem.fullfilled, (state)=>{
-            state.actionStatus = 'fullfilled';
+        .addCase(addNewItem.fulfilled, (state,action)=>{
+            state.actionStatus.status = 'success';
+           
+            
         })
         .addCase(addNewItem.rejected, (state,action)=>{
-            state.actionStatus = 'failed';
-            state.actionStatus.error = action.error.message;
+            state.actionStatus.status = 'failed';
+           
         })
 
     }

@@ -1,16 +1,17 @@
 package helpers
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
 	"os"
 
+	"stock-management-server/models"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/gorm"
 )
 
 type ContextKey string
@@ -62,17 +63,22 @@ func GenerateAllTokens(EId string, firstName string, lastName string, UID string
 
 }
 
-func UpdateAllTokens(db *sql.DB, signedToken, signedRefreshToken, userId string) error {
+func UpdateAllTokens(db *gorm.DB, signedToken, signedRefreshToken, userId string) error {
 	updateObj := map[string]interface{}{
 		"token":         signedToken,
 		"refresh_token": signedRefreshToken,
 		"updated_at":    time.Now(),
 	}
 
-	query := "UPDATE users SET token=?, refresh_token=?, updated_at=? WHERE user_id=?"
-	_, err := db.Exec(query, updateObj["token"], updateObj["refresh_token"], updateObj["updated_at"], userId)
-	if err != nil {
-		log.Panic((err))
+	tx := db.Begin()
+
+	if err := tx.Model(&models.User{}).Where("uid = ?", userId).Updates(updateObj).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 

@@ -8,8 +8,7 @@ import RequestList from "./component/Requests/RequestList";
 import ReturnList from "./component/Returns/ReturnList";
 import ReturnForm from "./component/Returns/form/ItemReturnForm";
 import ItemDetailModal from "./component/Requests/modal/ItemDetailModal";
-import ReturnItemDetailModal from "./component/Returns/modal/ReturnItemDetailModal";
-import Account from "./component/UserLogins/Account";
+import ConsumableList from './component/Inventory/ConsumableList';
 
 
 
@@ -33,11 +32,11 @@ function App() {
       <Route path="/RequestList" element={<RequestList/>}/>
       <Route path="/ReturnList" element={<ReturnList/>}/>
       <Route path="/ReturnForm" element={<ReturnForm/>}/>
-      <Route path="/Account" element={<Account/>}/>
+      <Route path="/ConsumableList" element={<ConsumableList/>}/>
 
 
       <Route path="/ItemDetailModal" element={<ItemDetailModal/>}/>
-      <Route path="/ReturnItemDetailModal" element={<ReturnItemDetailModal/>}/>
+     
 </Routes>
   );
 }

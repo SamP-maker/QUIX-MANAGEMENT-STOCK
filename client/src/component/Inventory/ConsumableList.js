@@ -6,7 +6,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import { openSidebar } from "../../redux/feature/SidebarSlice";
 import { useLocation,useNavigate } from "react-router-dom";
 import { fetchAllRequests, updateRequests} from "../../redux/feature/RequestSlice";
-import ItemForm from "./modal/ItemDetailModal";
+
 
 
 
@@ -162,43 +162,6 @@ const renderPagination = () => {
         ));
     }
 
-    const handleFormUpdate = (item) =>{
-        const updatedItems = item.map(value => ({
-            ...value,
-            return_status:'pending',
-            request_status: 'approved',
-        }))
-        
-        dispatch(updateRequests(updatedItems));
-
-    }
-
-    const renderNewRequest = ()=>{
-
-    
-        return pendingRequests.map((item)=>(
-            <form>
-            
-            
-            
-
-            <div className="pending-table-container " >
-     
-      
-            <i class="fa fa-file"></i>
-                <p1>{item.team.charAt(0).toUpperCase() + item.team.substring(1).toLowerCase()}</p1>
-                <p1>{item.department.charAt(0).toUpperCase() + item.department.substring(1).toLowerCase()}</p1>
-                <p1>{item.created_at}</p1>
-                <div className="view-modal-container" onClick={()=>handleOpenModal(item)}>View</div>
-                {console.log(item)}
-        
-            </div>
-
-            </form>
-            
-        ))
-    }
-    
     
 
     
@@ -247,16 +210,6 @@ const renderPagination = () => {
 
     return (
         <div className={"page-container"}>
-            {openModal ? 
-    <div className={"item-form-border"}>
-                <ItemForm
-                   data={selectedData}
-                    onClose={() => setOpenModal(false)}
-                />
-               </div>
-            : null}
-        <div className={`${openModal ? 'blur-background' : ''}`}>
-        
         
         <div className="stock-list-container">
 
@@ -266,8 +219,8 @@ const renderPagination = () => {
 
         
        
-        <label className="label-container"><h1>Pending Request</h1></label>
-        {renderNewRequest()}
+       
+    
         
      
  
@@ -276,13 +229,13 @@ const renderPagination = () => {
 
             <div className="flexbox-container">
 
-            <label className="label-container"><h1>Request History</h1></label>
+            <label className="label-container"><h1>Consumable History</h1></label>
 
             <div className="table-nav-container">
 
                 <div className="left-container">
                
-                <CustomButton padding={"request-sort"} text={"Sort by:"} sortBy={sortBy} onChange={handleSortChange}/>
+                <CustomButton padding={"consumable-sort"} text={"Sort by:"} sortBy={sortBy} onChange={handleSortChange}/>
                 <CustomButton padding={"order"} text={"Order by:"} sortOrder={sortOrder} onChange={handleOrderChange}/>
                 <CustomButton text={"Export csv"} padding={"csv"} onClick={exportToCSV}/>
         
@@ -332,7 +285,7 @@ const renderPagination = () => {
 
 
    </div>
-   </div>
+  
     )
 }
 

@@ -3,13 +3,17 @@ package models
 import "time"
 
 type RequestItem struct {
-	ItemID     int            `json:"item_id" gorm:"primaryKey; autoIncrement"`
-	RequestID  string         `json:"item_Name" gorm:"not null"`
-	ReturnerID int            `json:"quantity" gorm:"not null"`
-	CreatedAt  time.Time      `json:"missing_Item gorm:"not null"`
-	UpdatedAt  time.Time      `json:"broken_Item" gorm:"not null"`
-	Status     string         `json:"total_Count" gorm:"not null"`
-	Items      []Item_Details `json:"items" gorm:"foreignKey:RequestID"`
+	RequestID     int           `json:"request_id" gorm:"primaryKey;autoIncrement"`
+	ReturnerID    int           `json:"returner_id" gorm:"not null"`
+	CreatedAt     time.Time     `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt     time.Time     `json:"updated_at" gorm:"autoUpdateTime"`
+	ExpiredAt     time.Time     `json:"expire_at"`
+	ReturnStatus  string        `json:"return_status" gorm:"not null"`
+	RequestStatus string        `json:"request_status" gorm:"not null"`
+	WorkOrder     string        `json:"work_order" gorm:"not null"`
+	Team          string        `json:"team" gorm:"not null"`
+	Department    string        `json:"department" gorm:"not null"`
+	Items         []ItemDetails `json:"items" gorm:"foreignKey:RequestID;references:RequestID"`
 }
 
 type UpdateStatusRequest struct {

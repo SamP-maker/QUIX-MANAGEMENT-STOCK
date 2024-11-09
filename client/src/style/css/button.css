@@ -50,11 +50,14 @@ color:var(--White);
     font-family: "Work Sans", sans-serif;
     border-radius:10px;
     background-color: var(--LightBlue);
-color:var(--White);
+color:var(--Black);
 
     &:hover{
+        content:"Submit";
+        font-family: "Work Sans", sans-serif;
         background-color: var(--Blue);
         cursor:pointer;
+        color:var(--White);
     }
 }
 
@@ -69,8 +72,20 @@ color:var(--White);
 
 
 .button-sort-container {
-width:150px;
-
+    outline:none;
+    background-color: var(--Grey);
+    text-decoration: none;
+    border-radius:.5rem;
+    color: var(--White);
+    border: none;
+    font-family: "Work Sans", sans-serif;
+    padding:.5rem 1rem;
+    
+    
+    &:hover{
+        cursor:pointer;
+        background-color: var(--LightGrey);
+    }
 
 }
 
@@ -158,5 +173,91 @@ padding:.5rem 1rem;
     &:hover{
         cursor:pointer;
         background-color: var(--DarkYellow);
+    }
+}
+
+
+.Burgerbar-flexbox{
+    display:flex;
+    flex-direction:column;
+    justify-content: space-between;
+    gap:.2em;
+       
+    &:hover{
+        cursor: pointer;
+    }
+}
+
+
+.Burgerbar-Container{
+    height:8px;
+    width:40px;
+    border-radius: 10px;
+    background-color: var(--Black);
+   
+
+ 
+}
+
+.CloseButton-flexbox{
+    display:flex;
+    flex-direction:column;
+    justify-content: space-between;
+    gap:.2em;
+       
+    &:hover{
+        cursor: pointer;
+    }
+
+ 
+}
+
+
+.custom-container{
+    border:1px solid var(--Black);
+    background-color: var(--Grey);
+    color: var(--White);
+    height:80%;
+    padding-left:1rem; padding-right:1rem;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    border-radius:10px;
+    
+    
+
+    select{
+        color:var(--White);
+    background-color: transparent;
+    border:none;
+    }
+
+    &:hover{
+        cursor:pointer;
+    }
+
+
+}
+
+.button-container-inventory{
+    padding:.5em 2rem;
+    border:none;
+    border-radius:2em;
+    font-family: "Work Sans", sans-serif;
+    font-size:16px;
+
+    &:hover{
+
+        background-color: var(--Blue);
+        cursor:pointer;
+    }
+}
+
+
+.red{
+    &:hover{
+
+        background-color: var(--Red);
+        cursor:pointer;
     }
 }
